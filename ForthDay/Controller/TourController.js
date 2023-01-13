@@ -1,79 +1,94 @@
-const fs = require('fs');
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
-);
-/** Middleware starts */
-//Middleware - check Param id
-exports.checkID = (req, res, next, val) => {
-  if (!tours.find((x) => x.id === req.params.id * 1)) {
-    return res.status(404).json({
+const Tour = require('../Model/tourModel');
+
+exports.getAllTours = async (req, res) => {
+  try {
+    const tours = await Tour.find();
+    res.status(200).json({
+      status: 'success',
+      count: tours.length,
+      timeAt: req.requestedTime, // retrived from middle ware
+      data: { tours },
+    });
+  } catch (err) {
+    res.status(400).json({
       status: 'fail',
-      message: 'Record not found',
+      message: 'Invalid request!!!',
     });
   }
-  next();
 };
 
-exports.checkPostBody = (req, res, next) => {
-  if (!req.body.name || !req.body.price) {
-    return res.status(404).json({
+exports.getTour = async (req, res) => {
+  try {
+    const tours = await Tour.findById(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      count: tours.length,
+      timeAt: req.requestedTime, // retrived from middle ware
+      data: { tours },
+    });
+  } catch (err) {
+    res.status(400).json({
       status: 'fail',
-      message: 'Name or Price param missing !!!',
+      message: 'Invalid request!!!',
     });
   }
-  next();
 };
 
-/** Middleware end */
-
-exports.getAllTours = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    count: tours.length,
-    timeAt: req.requestedTime, // retrived from middle ware
-    data: { tours },
-  });
+exports.addNewTour = async (req, res) => {
+  try {
+    /***
+     * //type 1
+     * const newdata = new Tour({
+     * name:"mani", etc...});
+     *
+     * newdata.save().then().catch()
+     */
+    // type 2 => Tour.create()
+    const newTour = await Tour.create(req.body);
+    res.status(201).json({
+      status: 'success',
+      data: {
+        tour: newTour,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'Invalid input or missing fields!!!',
+    });
+  }
 };
 
-exports.getTour = (req, res) => {
-  let id = req.params.id * 1; // type convertion  -> STRING to INT
-  const tour = tours.find((x) => x.id === id);
-  res.status(200).json({
-    status: 'success',
-    timeAt: req.requestedTime, // retrived from middle ware
-    data: { tour },
-  });
+exports.updateTour = async (req, res) => {
+  try {
+    const tourResult = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    res.status(200).json({
+      status: 'success',
+      tourResult,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      data: 'record not updated',
+      message: err.message,
+    });
+  }
 };
 
-exports.addNewTour = (req, res) => {
-  console.log(req.body);
-  const newID = tours[tours.length - 1].id + 1;
-  const newRecord = Object.assign({ id: newID }, req.body);
-  tours.push(newRecord);
-  fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
-    JSON.stringify(tours),
-    (err) => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          tour: newRecord,
-        },
-      });
-    }
-  );
-};
-
-exports.updateTour = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    data: 'record updated',
-  });
-};
-
-exports.deleteTour = (req, res) => {
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
+exports.deleteTour = async (req, res) => {
+  try {
+    await Tour.findByIdAndDelete(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      data: 'record delete',
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
 };
