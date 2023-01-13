@@ -9,10 +9,16 @@ const app = express();
 //Middleware => middleware will be called each and every requests
 app.use(express.json()); // used to collect and parse user request inputs
 
-app.use(morgan('dev')); // used to retrive request details
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev')); // used to retrive request details
+}
+
+app.use(express.static(`${__dirname}/public`)); // serve static file and data to user
 
 app.use((req, res, next) => {
-  console.log('Hellow from middleware 2');
+  console.log(
+    `Current environement : ${process.env.NODE_ENV} - Hellow from middleware`
+  );
   next();
 });
 
