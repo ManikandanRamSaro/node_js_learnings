@@ -1,0 +1,2 @@
+😀😀😀😀ManiManju😀😀😀😀
+Full-stack frameworks provide structure and functionality for your entire application – from the client to the server to the database. A full-stack framework might come with many features, including templating engines, WebSocket libraries, and ORMs. Depending on the size of your team and application, these features could be very useful or they could be more than you need.
