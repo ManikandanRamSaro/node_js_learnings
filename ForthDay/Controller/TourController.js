@@ -2,6 +2,29 @@ const fs = require('fs');
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
+/** Middleware starts */
+//Middleware - check Param id
+exports.checkID = (req, res, next, val) => {
+  if (!tours.find((x) => x.id === req.params.id * 1)) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Record not found',
+    });
+  }
+  next();
+};
+
+exports.checkPostBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Name or Price param missing !!!',
+    });
+  }
+  next();
+};
+
+/** Middleware end */
 
 exports.getAllTours = (req, res) => {
   res.status(200).json({
@@ -15,14 +38,6 @@ exports.getAllTours = (req, res) => {
 exports.getTour = (req, res) => {
   let id = req.params.id * 1; // type convertion  -> STRING to INT
   const tour = tours.find((x) => x.id === id);
-  if (!tour) {
-    // if tour undefined
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Record not found',
-      timeAt: req.requestedTime, // retrived from middle ware
-    });
-  }
   res.status(200).json({
     status: 'success',
     timeAt: req.requestedTime, // retrived from middle ware
@@ -50,12 +65,6 @@ exports.addNewTour = (req, res) => {
 };
 
 exports.updateTour = (req, res) => {
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Record not found',
-    });
-  }
   res.status(200).json({
     status: 'success',
     data: 'record updated',
@@ -63,12 +72,6 @@ exports.updateTour = (req, res) => {
 };
 
 exports.deleteTour = (req, res) => {
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Record not found',
-    });
-  }
   res.status(204).json({
     status: 'success',
     data: null,
